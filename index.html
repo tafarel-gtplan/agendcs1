@@ -448,20 +448,20 @@ tr:hover td { background: #f8fafc; }
     background:var(--green); color:#fff; border-radius:50%; width:13px; height:13px;
     display:flex; align-items:center; justify-content:center; font-weight:900; }
 /* ── Agenda CONFIRMADA — pip azul mais escuro, borda sólida ── */
-.pip-Planejada-P.pip-confirmed,
-.pip-Planejada-R.pip-confirmed {
-  background: rgba(37,99,235,.22);
-  color: #1e40af;
-  border-color: rgba(37,99,235,.65);
-  box-shadow: 0 0 0 1.5px rgba(37,99,235,.18);
+.pip-Planejada-P.pip-agendada,
+.pip-Planejada-R.pip-agendada {
+  background: rgba(13,148,136,.18);
+  color: #0f766e;
+  border-color: rgba(13,148,136,.6);
+  box-shadow: 0 0 0 1.5px rgba(13,148,136,.15);
 }
-/* Ícone ✔ canto superior direito — confirmada */
-.pip-confirmed::before {
+/* Ícone ✔ canto superior direito — agendada */
+.pip-agendada::before {
   content: '✔';
   position: absolute;
   top: -5px; right: -5px;
   font-size: 8px;
-  background: #1d4ed8;
+  background: #0f766e;
   color: #fff;
   border-radius: 50%;
   width: 13px; height: 13px;
@@ -470,9 +470,9 @@ tr:hover td { background: #f8fafc; }
   box-shadow: 0 1px 3px rgba(0,0,0,.25);
   line-height: 1;
 }
-/* Confirmada sobrescreve o ✓ de Realizada (que usa ::after) sem conflito */
-.pip-Realizada-P.pip-confirmed::before,
-.pip-Realizada-R.pip-confirmed::before { display: none; }
+/* Agendada sobrescreve o ✓ de Realizada (que usa ::after) sem conflito */
+.pip-Realizada-P.pip-agendada::before,
+.pip-Realizada-R.pip-agendada::before { display: none; }
 .cal-row-hl { background: #fafbff !important; }
 
 /* ─────────────────────────────────────
@@ -1117,6 +1117,70 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
 .mode-edit { background: rgba(5,150,105,.12); color: var(--green); border: 1px solid rgba(5,150,105,.25); }
 .mode-view { background: rgba(217,119,6,.1); color: var(--yellow); border: 1px solid rgba(217,119,6,.25); }
 
+
+/* ══════════════════════════════════════
+   DARK MODE
+══════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg:       #0f172a;
+  --surface:  #1e293b;
+  --surface2: #162032;
+  --sidebar:  #0a1020;
+
+  --border:   #2d3f55;
+  --border2:  #3a5068;
+  --tx:  #f1f5f9; --tx2: #cbd5e1; --tx3: #94a3b8; --tx4: #64748b;
+
+  --primary-l: rgba(61,169,214,.15);
+  --primary-b: rgba(61,169,214,.3);
+  --green-l:   rgba(5,150,105,.15);
+  --yellow-l:  rgba(217,119,6,.15);
+  --red-l:     rgba(220,38,38,.15);
+  --blue-l:    rgba(37,99,235,.15);
+  --purple-l:  rgba(124,58,237,.15);
+  --orange-l:  rgba(234,88,12,.15);
+  --teal-l:    rgba(13,148,136,.15);
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.3);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+  --shadow:    0 4px 6px rgba(0,0,0,.35), 0 2px 4px rgba(0,0,0,.25);
+  --shadow-md: 0 8px 16px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.3);
+  --shadow-lg: 0 20px 40px rgba(0,0,0,.5);
+}
+
+[data-theme="dark"] .sidebar { background: var(--sidebar); }
+[data-theme="dark"] thead tr { background: #162032; }
+[data-theme="dark"] tr:hover td { background: #1a2a3a; }
+[data-theme="dark"] .finput, [data-theme="dark"] .fselect,
+[data-theme="dark"] .finput2, [data-theme="dark"] .fselect2, [data-theme="dark"] .ftextarea {
+  background: #1e293b; color: var(--tx); border-color: var(--border2);
+}
+[data-theme="dark"] .login-card { background: #1e293b; }
+[data-theme="dark"] .login-title, [data-theme="dark"] .login-field label { color: var(--tx); }
+[data-theme="dark"] .login-input { background: #162032; color: var(--tx); border-color: var(--border2); }
+[data-theme="dark"] .modal { background: var(--surface); }
+[data-theme="dark"] .col-toggle-panel { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .notif-panel { background: var(--surface); border-color: var(--border); }
+[data-theme="dark"] .overlay { background: rgba(0,0,0,.65); }
+[data-theme="dark"] .share-url-box { background: #162032; border-color: var(--border2); }
+[data-theme="dark"] .share-link-card { border-color: var(--border); }
+[data-theme="dark"] .share-link-card:hover { border-color: var(--primary); }
+[data-theme="dark"] #save-footer { background: var(--surface); border-color: var(--border); }
+
+/* Dark mode scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: var(--border2); }
+
+/* Theme toggle button */
+.theme-toggle-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px;
+  background: none; border: 1px solid var(--border2);
+  border-radius: var(--r6); cursor: pointer;
+  color: var(--tx3); flex-shrink: 0;
+  transition: background .15s, border-color .15s;
+}
+.theme-toggle-btn:hover { background: var(--surface2); border-color: var(--primary); color: var(--primary); }
+.theme-toggle-btn svg { stroke: currentColor; transition: stroke .15s; }
 </style>
 <!-- EmailJS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -1292,6 +1356,11 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     Nova Agenda
   </button>
+  <!-- Botão tema claro/escuro -->
+  <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Alternar modo claro/escuro">
+    <svg id="theme-icon-dark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    <svg id="theme-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+  </button>
   <button class="btn btn-ghost btn-sm" onclick="doLogout()" style="color:var(--tx3)" title="Sair">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     Sair
@@ -1331,10 +1400,10 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
         <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Planejada</div>
         <div class="legend-item">
           <div style="position:relative;width:10px;height:10px;flex-shrink:0">
-            <div class="legend-dot" style="background:#1d4ed8;width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(37,99,235,.65)"></div>
-            <span style="position:absolute;top:-4px;right:-4px;font-size:6px;background:#1d4ed8;color:#fff;border-radius:50%;width:8px;height:8px;display:flex;align-items:center;justify-content:center;font-weight:900">✔</span>
+            <div class="legend-dot" style="background:#0f766e;width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(13,148,136,.65)"></div>
+            <span style="position:absolute;top:-4px;right:-4px;font-size:6px;background:#0f766e;color:#fff;border-radius:50%;width:8px;height:8px;display:flex;align-items:center;justify-content:center;font-weight:900">✔</span>
           </div>
-          Confirmada
+          Agendada
         </div>
         <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Realizada</div>
         <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Atrasada</div>
@@ -1410,7 +1479,7 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
     <span>📌 Legenda de Tipos:</span>
     <span class="type-pip pip-p">P</span><span>= Agenda Presencial</span>
     <span class="type-pip pip-r">R</span><span>= Agenda Recorrente</span>
-    <span style="color:var(--tx4);font-size:11px;margin-left:8px">✔ = Confirmada com cliente (data preenchida) &nbsp;|&nbsp; ✓ = Realizada &nbsp;|&nbsp; Clique em qualquer célula para editar</span>
+    <span style="color:var(--tx4);font-size:11px;margin-left:8px">✔ = Agendada com cliente (data preenchida) &nbsp;|&nbsp; ✓ = Realizada &nbsp;|&nbsp; Clique em qualquer célula para editar</span>
   </div>
 </div>
 
@@ -1946,7 +2015,7 @@ Atenciosamente,
       <div class="field">
         <div class="flabel">Data de Confirmação com Cliente <span class="freq">*</span></div>
         <input class="finput2" type="date" id="ec-previsao">
-        <div class="fhint" style="color:var(--blue)">✔ Ao preencher esta data, a agenda aparece como <strong>Confirmada</strong> no calendário</div>
+        <div class="fhint" style="color:var(--teal)">✔ Ao preencher esta data, a agenda aparece como <strong>Agendada</strong> no calendário</div>
       </div>
       <div class="field">
         <div class="flabel">Anotação / Observações</div>
@@ -3793,7 +3862,7 @@ const DEFAULT_DATA = {
         "type": "R",
         "status": "Realizada",
         "previsao": "2026-03-04",
-        "anotacao": "ATA – Reunião de Customer Success\n\nCliente: Instituto de Cardiologia de Porto Alegre\nData: 04/03\nFormato: Reunião online (agenda recorrente)\n\nParticipantes\n\nInstituto de Cardiologia de Porto Alegre\n\nJaqueline Sauer – Gerente de Suprimentos\n\nPriscila Batista – Analista de Planejamento\n\nGTPlan\n\nTafarel Maurente – Consultor de Negócios\n\nMaykon Aguiar – Analista Técnico\n\nKarlos Dâmaso – Time Técnico\n\nObjetivo da reunião\n\nRealizar o acompanhamento recorrente com foco em planejamento de materiais, análise de indicadores operacionais e evolução da utilização da plataforma.\n\nPrincipais pontos discutidos\nAnálise de indicadores e planejamento\n\nDurante a agenda foram discutidos temas relacionados ao planejamento de materiais e análise de indicadores operacionais, com foco no acompanhamento das rotinas de planejamento e na utilização da plataforma.\n\nAtivação do novo estabelecimento – FUC Santa Maria\n\nFoi abordado o processo de ativação do novo estabelecimento FUC Santa Maria.\n\nDurante a reunião, o hospital sinalizou preocupação em relação à homologação dos dados, pois algumas informações do novo estabelecimento estavam apresentando divergências.\n\nA partir da análise realizada em conjunto durante a agenda, foram confirmadas inconsistências nos dados. O time técnico da GTPlan ficou responsável por realizar os ajustes necessários.\n\nApós as correções, será agendada uma nova reunião técnica, com apoio do time de consultoria, para realização da homologação final do estabelecimento na plataforma.\n\nApresentação de funcionalidades\n\nDurante a reunião também foram apresentados, de forma introdutória, alguns recursos da plataforma, incluindo:\n\nGTPlan IA\n\nRPA (Reposição Automatizada)\n\nAs funcionalidades foram mencionadas como possibilidades de evolução da operação, com foco na automação de processos e no apoio às rotinas de planejamento.\n\nAgenda presencial\n\nFicou pré-agendada uma visita presencial para a última semana do mês de março, com o objetivo de realizar um encontro estratégico com a equipe do hospital, visando aprofundar discussões sobre planejamento e evolução da utilização da plataforma.\n\nPróximos passos\n\nRealização de visita presencial na última semana de março\n\nContinuidade das agendas recorrentes de acompanhamento"
+        "anotacao": "ATA – Reunião de Customer Success\n\nCliente: Instituto de Cardiologia de Porto Alegre\nData: 04/03\nFormato: Reunião online (agenda recorrente)\n\nParticipantes\n\nInstituto de Cardiologia de Porto Alegre\n\nJaqueline Sauer – Gerente de Suprimentos\n\nPriscila Batista – Analista de Planejamento\n\nGTPlan\n\nTafarel Maurente – Consultor de Negócios\n\nMaykon Aguiar – Analista Técnico\n\nKarlos Dâmaso – Time Técnico\n\nObjetivo da reunião\n\nRealizar o acompanhamento recorrente com foco em planejamento de materiais, análise de indicadores operacionais e evolução da utilização da plataforma.\n\nPrincipais pontos discutidos\nAnálise de indicadores e planejamento\n\nDurante a agenda foram discutidos temas relacionados ao planejamento de materiais e análise de indicadores operacionais, com foco no acompanhamento das rotinas de planejamento e na utilização da plataforma.\n\nAtivação do novo estabelecimento – FUC Santa Maria\n\nFoi abordado o processo de ativação do novo estabelecimento FUC Santa Maria.\n\nDurante a reunião, o hospital sinalizou preocupação em relação à homologação dos dados, pois algumas informações do novo estabelecimento estavam apresentando divergências.\n\nA partir da análise realizada em conjunto durante a agenda, foram agendadas inconsistências nos dados. O time técnico da GTPlan ficou responsável por realizar os ajustes necessários.\n\nApós as correções, será agendada uma nova reunião técnica, com apoio do time de consultoria, para realização da homologação final do estabelecimento na plataforma.\n\nApresentação de funcionalidades\n\nDurante a reunião também foram apresentados, de forma introdutória, alguns recursos da plataforma, incluindo:\n\nGTPlan IA\n\nRPA (Reposição Automatizada)\n\nAs funcionalidades foram mencionadas como possibilidades de evolução da operação, com foco na automação de processos e no apoio às rotinas de planejamento.\n\nAgenda presencial\n\nFicou pré-agendada uma visita presencial para a última semana do mês de março, com o objetivo de realizar um encontro estratégico com a equipe do hospital, visando aprofundar discussões sobre planejamento e evolução da utilização da plataforma.\n\nPróximos passos\n\nRealização de visita presencial na última semana de março\n\nContinuidade das agendas recorrentes de acompanhamento"
     },
     {
         "id": "a70",
@@ -4138,7 +4207,7 @@ const DEFAULT_DATA = {
         "tipo": "R",
         "data": "2026-03-04",
         "previsao": "2026-03-04",
-        "pauta": "ATA – Reunião de Customer Success\n\nCliente: Instituto de Cardiologia de Porto Alegre\nData: 04/03\nFormato: Reunião online (agenda recorrente)\n\nParticipantes\n\nInstituto de Cardiologia de Porto Alegre\n\nJaqueline Sauer – Gerente de Suprimentos\n\nPriscila Batista – Analista de Planejamento\n\nGTPlan\n\nTafarel Maurente – Consultor de Negócios\n\nMaykon Aguiar – Analista Técnico\n\nKarlos Dâmaso – Time Técnico\n\nObjetivo da reunião\n\nRealizar o acompanhamento recorrente com foco em planejamento de materiais, análise de indicadores operacionais e evolução da utilização da plataforma.\n\nPrincipais pontos discutidos\nAnálise de indicadores e planejamento\n\nDurante a agenda foram discutidos temas relacionados ao planejamento de materiais e análise de indicadores operacionais, com foco no acompanhamento das rotinas de planejamento e na utilização da plataforma.\n\nAtivação do novo estabelecimento – FUC Santa Maria\n\nFoi abordado o processo de ativação do novo estabelecimento FUC Santa Maria.\n\nDurante a reunião, o hospital sinalizou preocupação em relação à homologação dos dados, pois algumas informações do novo estabelecimento estavam apresentando divergências.\n\nA partir da análise realizada em conjunto durante a agenda, foram confirmadas inconsistências nos dados. O time técnico da GTPlan ficou responsável por realizar os ajustes necessários.\n\nApós as correções, será agendada uma nova reunião técnica, com apoio do time de consultoria, para realização da homologação final do estabelecimento na plataforma.\n\nApresentação de funcionalidades\n\nDurante a reunião também foram apresentados, de forma introdutória, alguns recursos da plataforma, incluindo:\n\nGTPlan IA\n\nRPA (Reposição Automatizada)\n\nAs funcionalidades foram mencionadas como possibilidades de evolução da operação, com foco na automação de processos e no apoio às rotinas de planejamento.\n\nAgenda presencial\n\nFicou pré-agendada uma visita presencial para a última semana do mês de março, com o objetivo de realizar um encontro estratégico com a equipe do hospital, visando aprofundar discussões sobre planejamento e evolução da utilização da plataforma.\n\nPróximos passos\n\nRealização de visita presencial na última semana de março\n\nContinuidade das agendas recorrentes de acompanhamento",
+        "pauta": "ATA – Reunião de Customer Success\n\nCliente: Instituto de Cardiologia de Porto Alegre\nData: 04/03\nFormato: Reunião online (agenda recorrente)\n\nParticipantes\n\nInstituto de Cardiologia de Porto Alegre\n\nJaqueline Sauer – Gerente de Suprimentos\n\nPriscila Batista – Analista de Planejamento\n\nGTPlan\n\nTafarel Maurente – Consultor de Negócios\n\nMaykon Aguiar – Analista Técnico\n\nKarlos Dâmaso – Time Técnico\n\nObjetivo da reunião\n\nRealizar o acompanhamento recorrente com foco em planejamento de materiais, análise de indicadores operacionais e evolução da utilização da plataforma.\n\nPrincipais pontos discutidos\nAnálise de indicadores e planejamento\n\nDurante a agenda foram discutidos temas relacionados ao planejamento de materiais e análise de indicadores operacionais, com foco no acompanhamento das rotinas de planejamento e na utilização da plataforma.\n\nAtivação do novo estabelecimento – FUC Santa Maria\n\nFoi abordado o processo de ativação do novo estabelecimento FUC Santa Maria.\n\nDurante a reunião, o hospital sinalizou preocupação em relação à homologação dos dados, pois algumas informações do novo estabelecimento estavam apresentando divergências.\n\nA partir da análise realizada em conjunto durante a agenda, foram agendadas inconsistências nos dados. O time técnico da GTPlan ficou responsável por realizar os ajustes necessários.\n\nApós as correções, será agendada uma nova reunião técnica, com apoio do time de consultoria, para realização da homologação final do estabelecimento na plataforma.\n\nApresentação de funcionalidades\n\nDurante a reunião também foram apresentados, de forma introdutória, alguns recursos da plataforma, incluindo:\n\nGTPlan IA\n\nRPA (Reposição Automatizada)\n\nAs funcionalidades foram mencionadas como possibilidades de evolução da operação, com foco na automação de processos e no apoio às rotinas de planejamento.\n\nAgenda presencial\n\nFicou pré-agendada uma visita presencial para a última semana do mês de março, com o objetivo de realizar um encontro estratégico com a equipe do hospital, visando aprofundar discussões sobre planejamento e evolução da utilização da plataforma.\n\nPróximos passos\n\nRealização de visita presencial na última semana de março\n\nContinuidade das agendas recorrentes de acompanhamento",
         "participantes": "Tafarel Maurente",
         "status": "Concluído",
         "acoes": 0,
@@ -4409,13 +4478,13 @@ function renderCalendar() {
       const ag = DB.agendas.find(a=>a.hospId===h.id && a.month===m && a.week===w && a.type===type);
       if(ag) {
         const isConfirmed = ag.status === 'Planejada' && ag.previsao && ag.previsao.trim() !== '';
-        const cls = `pip-${ag.status.replace(/\s+/g,'')}-${type}${isConfirmed ? ' pip-confirmed' : ''}`;
+        const cls = `pip-${ag.status.replace(/\s+/g,'')}-${type}${isConfirmed ? ' pip-agendada' : ''}`;
         const dataFormatada = isConfirmed
           ? new Date(ag.previsao + 'T00:00:00').toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'})
           : '';
         const tooltipBase = `${h.nome} · ${m} ${w} · ${ag.status}`;
         const tooltipExtra = isConfirmed
-          ? ` ✔ Confirmada para ${dataFormatada}`
+          ? ` ✔ Agendada para ${dataFormatada}`
           : (ag.anotacao ? ` · ${ag.anotacao}` : '');
         const tooltip = tooltipBase + tooltipExtra;
         html += `<td class="cal-cell" onclick="openEditCell(${h.id},'${m}','${w}')" title="${tooltip.replace(/"/g,'&quot;')}">
@@ -5951,6 +6020,36 @@ function showToast(msg, type='success') {
     setTimeout(()=>t.remove(),300); }, 4000);
 }
 
+// ═══════════════════════════════════
+// THEME — claro / escuro
+// ═══════════════════════════════════
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+  applyTheme(newTheme);
+  try { localStorage.setItem('agendcs_theme', newTheme); } catch(_) {}
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : '');
+  const isDark = theme === 'dark';
+  const iconDark  = document.getElementById('theme-icon-dark');
+  const iconLight = document.getElementById('theme-icon-light');
+  if (iconDark)  iconDark.style.display  = isDark ? 'block' : 'none';
+  if (iconLight) iconLight.style.display = isDark ? 'none'  : 'block';
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.title = isDark ? 'Modo claro' : 'Modo escuro';
+}
+
+function initTheme() {
+  let saved = '';
+  try { saved = localStorage.getItem('agendcs_theme') || ''; } catch(_) {}
+  if (!saved) {
+    saved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  applyTheme(saved);
+}
+
 function exportAll() {
   const blob = new Blob([JSON.stringify(DB, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -6702,6 +6801,8 @@ function init() {
   if (typeof initMobNav === 'function') initMobNav();
   // Restore sidebar hidden state
   restoreSidebarState();
+  // Init theme
+  initTheme();
 }
 
 let _lastSaveHash = '';
@@ -6934,6 +7035,13 @@ function confirmRestoreBackup(slot) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Apply theme immediately to avoid flash
+  try {
+    const saved = localStorage.getItem('agendcs_theme') || '';
+    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  } catch(_) {}
 
   // ══════════════════════════════════════════════════════
   // DETECÇÃO E IMPORTAÇÃO AUTOMÁTICA DE DADOS LOCAIS
