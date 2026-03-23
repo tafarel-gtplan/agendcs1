@@ -1135,6 +1135,9 @@ body.edit-mode .edit-only.btn-delete { display: inline-flex !important; }
 body.view-only .edit-only { display: none !important; }
 body.view-only .edit-only-disable { pointer-events: none; opacity: .45; }
 body.edit-mode .edit-only { display: inline-flex !important; }
+/* Inline span toggle: hidden for editors (replaced by clickable version), shown for viewers */
+body.edit-mode .view-only-inline { display: none !important; }
+body.view-only .view-only-inline  { display: inline !important; }
 
 /* ── View-only: hide Sistema nav group entirely ── */
 body.view-only #grp-sistema,
@@ -2652,9 +2655,18 @@ Atenciosamente,
 <div class="overlay" id="editHospModal">
   <div class="modal modal-lg">
     <div class="modal-head">
-      <div>
-        <div class="modal-title">Editar Hospital</div>
-        <div style="font-size:11px;color:var(--tx3);margin-top:2px" id="eh-id-label"></div>
+      <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+        <div>
+          <div class="modal-title">Editar Cliente</div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:2px" id="eh-id-label"></div>
+        </div>
+        <div class="edit-only" style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r6);padding:4px 10px">
+          <span style="font-size:10.5px;color:var(--tx3);white-space:nowrap">ID do cliente</span>
+          <input id="eh-new-id" type="number" min="1"
+            style="width:64px;font-family:var(--fm);font-size:13px;font-weight:700;color:var(--primary);
+                   background:transparent;border:none;outline:none;text-align:center"
+            title="Editar ID do cliente">
+        </div>
       </div>
       <button class="close-x" onclick="closeModal('editHospModal')">✕</button>
     </div>
@@ -6187,7 +6199,12 @@ function renderHospitais() {
     const pCount = DB.agendas.filter(a=>a.hospId===h.id&&a.type==='P').length;
     const rCount = DB.agendas.filter(a=>a.hospId===h.id&&a.type==='R').length;
     const cells = [
-      { key:'id',          html:`<td style="display:none;font-family:var(--fm);font-size:11.5px;color:var(--tx3);font-weight:600">${h.id}</td>` },
+      { key:'id',          html:`<td style="display:none;font-family:var(--fm);font-size:11.5px;font-weight:600">
+        <span class="edit-only" data-action="edit-hosp-id" data-id="${h.id}"
+          style="color:var(--primary);cursor:pointer;border-bottom:1px dashed var(--primary);padding-bottom:1px"
+          title="Clique para editar ID">${h.id}</span>
+        <span class="view-only-inline" style="color:var(--tx3)">${h.id}</span>
+      </td>` },
       { key:'nome',        html:`<td style="display:none"><strong>${h.nome}</strong></td>` },
       { key:'curva',       html:`<td style="display:none"><span class="curva-${h.curva.toLowerCase()}">${h.curva}</span></td>` },
       { key:'cidade',      html:`<td style="display:none">${h.cidade}</td>` },
@@ -6215,7 +6232,15 @@ function renderHospitais() {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
     const id = parseInt(btn.dataset.id);
-    if (btn.dataset.action === 'edit-hosp')   openEditHosp(id);
+    if (btn.dataset.action === 'edit-hosp')    openEditHosp(id);
+    if (btn.dataset.action === 'edit-hosp-id') {
+      openEditHosp(id);
+      // Focus the ID input after modal opens
+      setTimeout(() => {
+        const el = document.getElementById('eh-new-id');
+        if (el) { el.focus(); el.select(); }
+      }, 80);
+    }
     if (btn.dataset.action === 'delete-hosp') deleteHosp(id);
   };
 }
@@ -7793,7 +7818,8 @@ function openEditHosp(id) {
 
   // Populate all fields
   document.getElementById('eh-id').value              = id;
-  document.getElementById('eh-id-label').textContent  = `ID #${id}`;
+  document.getElementById('eh-new-id').value          = id;
+  document.getElementById('eh-id-label').textContent  = `ID atual: #${id}`;
   document.getElementById('eh-nome').value            = hosp.nome        || '';
   document.getElementById('eh-cidade').value          = hosp.cidade      || '';
   document.getElementById('eh-uf').value              = hosp.uf          || '';
@@ -7828,36 +7854,58 @@ function openEditHosp(id) {
 
 function saveEditHosp() {
   if (!canEdit()) { showToast('Acesso negado.','error'); return; }
-  const id   = parseInt(document.getElementById('eh-id').value);
-  const nome = document.getElementById('eh-nome').value.trim();
+  const oldId  = parseInt(document.getElementById('eh-id').value);
+  const newId  = parseInt(document.getElementById('eh-new-id').value);
+  const nome   = document.getElementById('eh-nome').value.trim();
   const cidade = document.getElementById('eh-cidade').value.trim();
-  const uf   = document.getElementById('eh-uf').value;
+  const uf     = document.getElementById('eh-uf').value;
+
   if (!nome || !cidade || !uf) {
     showToast('Nome, cidade e UF são obrigatórios.','error'); return;
   }
-  const idx = DB.hospitals.findIndex(x => x.id === id);
-  if (idx === -1) { showToast('Hospital não encontrado.','error'); return; }
+  if (!newId || newId < 1) {
+    showToast('ID inválido — deve ser um número maior que 0.','error'); return;
+  }
 
-  // Update hospital record
+  const idx = DB.hospitals.findIndex(x => x.id === oldId);
+  if (idx === -1) { showToast('Cliente não encontrado.','error'); return; }
+
+  // ── ID changed: check for conflict and cascade update
+  if (newId !== oldId) {
+    if (DB.hospitals.some(x => x.id === newId)) {
+      showToast(`ID #${newId} já está em uso por outro cliente.`, 'error'); return;
+    }
+    // Cascade to all related records
+    DB.agendas.forEach(a => { if (a.hospId === oldId) a.hospId = newId; });
+    DB.acoes.forEach(a   => { if (a.hospId === oldId) a.hospId = newId; });
+    if (DB.atas) DB.atas.forEach(a => { if (a.hospId === oldId) a.hospId = newId; });
+    if (DB.cases) DB.cases.forEach(c => { if (c.hospId === oldId) c.hospId = newId; });
+    // Update nextHospId if needed
+    if (newId >= (DB.nextHospId || 0)) DB.nextHospId = newId + 1;
+  }
+
+  // Update hospital record (with possibly new ID)
   DB.hospitals[idx] = {
     ...DB.hospitals[idx],
+    id:          newId,
     nome,
     cidade,
     uf,
-    curva:       document.getElementById('eh-curva').value || DB.hospitals[idx].curva,
-    xyz:         document.getElementById('eh-xyz').value   || DB.hospitals[idx].xyz,
-    squad:       document.getElementById('eh-squad').value || DB.hospitals[idx].squad,
-    frequencia:  document.getElementById('eh-freq').value  || DB.hospitals[idx].frequencia,
-    recorrencia: document.getElementById('eh-rec').value   || DB.hospitals[idx].recorrencia,
+    curva:       document.getElementById('eh-curva').value     || DB.hospitals[idx].curva,
+    xyz:         document.getElementById('eh-xyz').value       || DB.hospitals[idx].xyz,
+    squad:       document.getElementById('eh-squad').value     || DB.hospitals[idx].squad,
+    frequencia:  document.getElementById('eh-freq').value      || DB.hospitals[idx].frequencia,
+    recorrencia: document.getElementById('eh-rec').value       || DB.hospitals[idx].recorrencia,
     consultor:   document.getElementById('eh-consultor').value || null,
     analista:    document.getElementById('eh-analista').value  || null,
   };
 
   saveState();
   closeModal('editHospModal');
-  showToast(`✅ "${nome}" atualizado com sucesso.`, 'success');
-
-  // ── GLOBAL SYNC: re-render all active views
+  const msg = newId !== oldId
+    ? `✅ "${nome}" atualizado · ID alterado de #${oldId} para #${newId}.`
+    : `✅ "${nome}" atualizado com sucesso.`;
+  showToast(msg, 'success');
   syncAllViews();
 }
 
