@@ -1725,9 +1725,6 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
   <!-- ══════════ AGENDAS PRESENCIAIS ══════════ -->
   <div id="bi-panel-agendas" data-bi-type="P">
 
-    <!-- Alertas automáticos -->
-    <div id="dash-alerts" style="margin-bottom:12px"></div>
-
     <!-- KPIs principais -->
     <div class="kpi-row" id="dash-kpis" style="grid-template-columns:repeat(5,1fr);margin-bottom:10px"></div>
 
@@ -1786,9 +1783,6 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
   </div>
 
   <div id="bi-panel-acoes-r" data-bi-type="R">
-
-    <!-- Alertas -->
-    <div id="dashr-alerts" style="margin-bottom:12px"></div>
 
     <!-- KPIs principais -->
     <div class="kpi-row" id="dashr-kpis" style="grid-template-columns:repeat(5,1fr);margin-bottom:10px"></div>
@@ -6548,18 +6542,7 @@ function _renderBiAgendas(ag, f) {
       <div class="kpi-sub">${k.sub}</div>
     </div>`).join('');
 
-  // ── Alertas automáticos
-  const alerts = [];
-  if (pctExec < 50 && total > 0) alerts.push(_alert(`Execução de agendas abaixo de 50% — apenas <strong>${pctExec}%</strong> realizadas`, 'danger'));
-  if (atrasadas > 0) {
-    const aCurvaA = ag.filter(x => x.status==='Atrasada' && (DB.hospitals.find(h=>h.id===x.hospId)||{}).curva==='A').length;
-    if (aCurvaA > 0) alerts.push(_alert(`<strong>${aCurvaA}</strong> agenda(s) Curva A com atraso — requer atenção imediata`, 'danger'));
-  }
-  if (backlog > 10) alerts.push(_alert(`Backlog crescente: <strong>${backlog}</strong> agendas planejadas ainda não realizadas`, 'warning'));
-  const ufs = [...new Set(DB.hospitals.map(h=>h.uf))];
-  const maxUfAg = Math.max(...ufs.map(u => ag.filter(a=>(DB.hospitals.find(h=>h.id===a.hospId)||{}).uf===u).length));
-  if (total > 0 && maxUfAg / total > 0.5) alerts.push(_alert('Concentração elevada de agendas em uma única UF (>50%)', 'warning'));
-  const _dalerts = document.getElementById('dash-alerts'); if(_dalerts) _dalerts.innerHTML = alerts.join('') || '';
+  // Alerts consolidated into Insights Automáticos (no top banner)
 
   // ── Status das agendas
   const statusCfg = [
@@ -6658,6 +6641,7 @@ function _renderBiAgendas(ag, f) {
   const curvaAatras = ag.filter(x=>x.status==='Atrasada' && (DB.hospitals.find(h=>h.id===x.hospId)||{}).curva==='A').length;
   if (curvaAatras > 0) insights.push(_insight(`Curva A com ${curvaAatras} agenda(s) atrasada(s) — risco alto`, 'neg'));
   if (canceladas > 0) insights.push(_insight(`${canceladas} agenda(s) cancelada(s) no período filtrado`, 'warn'));
+  if (backlog > 10) insights.push(_insight(`Backlog elevado: ${backlog} agendas planejadas não realizadas`, 'warn'));
   if (insights.length === 0) insights.push(_insight('Sem anomalias detectadas no período', 'info'));
   const _dins = document.getElementById('dash-insights'); if(_dins) _dins.innerHTML = `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);margin-bottom:8px">Análise automática</div>` + insights.join('');
 }
@@ -6705,16 +6689,7 @@ function _renderBiAcoes(ag, f) {
       <div class="kpi-sub">${k.sub}</div>
     </div>`).join('');
 
-  // ── Alertas
-  const alerts = [];
-  if (pctExec < 50 && total > 0) alerts.push(_alert(`Execução abaixo de 50% — apenas <strong>${pctExec}%</strong> realizadas`, 'danger'));
-  if (atrasadas > 0) {
-    const aCurvaA = ag.filter(x => x.status==='Atrasada' && (DB.hospitals.find(h=>h.id===x.hospId)||{}).curva==='A').length;
-    if (aCurvaA > 0) alerts.push(_alert(`<strong>${aCurvaA}</strong> agenda(s) Curva A com atraso — requer atenção`, 'danger'));
-  }
-  if (backlog > 10) alerts.push(_alert(`Backlog crescente: <strong>${backlog}</strong> agendas R planejadas não realizadas`, 'warning'));
-  const alertsEl = document.getElementById('dashr-alerts');
-  if (alertsEl) alertsEl.innerHTML = alerts.join('') || '';
+  // Alerts consolidated into Insights Automáticos (no top banner)
 
   // ── Status
   const statusCfg = [
@@ -6808,6 +6783,7 @@ function _renderBiAcoes(ag, f) {
   const curvaAatras = ag.filter(x=>x.status==='Atrasada'&&(DB.hospitals.find(h=>h.id===x.hospId)||{}).curva==='A').length;
   if (curvaAatras > 0) insights.push(_insight(`Curva A com ${curvaAatras} agenda(s) R atrasada(s)`, 'neg'));
   if (canceladas > 0) insights.push(_insight(`${canceladas} agenda(s) R cancelada(s) no período`, 'warn'));
+  if (backlog > 10) insights.push(_insight(`Backlog elevado: ${backlog} agendas R planejadas não realizadas`, 'warn'));
   if (insights.length === 0) insights.push(_insight('Sem anomalias nas agendas Recorrentes', 'info'));
   const insEl = document.getElementById('dashr-insights');
   if (insEl) insEl.innerHTML = `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--tx3);margin-bottom:8px">Análise automática</div>` + insights.join('');
@@ -6971,19 +6947,20 @@ function renderCasesIndicadores() {
   const statusF = getMsValues('ci-status');
   let cases = (DB.cases||[]).filter(c => msMatch(tipoF,c.tipo) && msMatch(statusF,c.status));
 
-  const total    = cases.length;
-  const totalCase= cases.filter(c=>c.tipo==='Case').length;
-  const totalDep = cases.filter(c=>c.tipo==='Depoimento').length;
+  const total     = cases.length;
+  const totalCase = cases.filter(c=>c.tipo==='Case').length;
+  const totalDep  = cases.filter(c=>c.tipo==='Depoimento').length;
+  const planejadosCI = cases.filter(c=>!['Publicado','Arquivado','Reprovado'].includes(c.status)).length;
 
   // KPIs
   document.getElementById('ci-kpis').innerHTML = [
-    {l:'Total Publicações', v:total,     c:'var(--primary)'},
-    {l:'Cases',             v:totalCase, c:'var(--blue)'   },
-    {l:'Depoimentos',       v:totalDep,  c:'var(--teal)'   },
+    {l:'Em Produção', v:total, s:`<span style="color:var(--primary);font-weight:600">${cases.filter(c=>c.status==='Publicado').length} publicado${cases.filter(c=>c.status==='Publicado').length!==1?'s':''}</span>`, c:'var(--primary)'},
+    {l:'Cases',             v:totalCase, s:total?Math.round(totalCase/total*100)+'% do total':'—', c:'var(--blue)'  },
+    {l:'Depoimentos',       v:totalDep,  s:total?Math.round(totalDep/total*100)+'% do total':'—',  c:'var(--teal)'  },
   ].map(k=>`<div class="kpi" style="--kc:${k.c}">
     <div class="kpi-label">${k.l}</div>
     <div class="kpi-value">${k.v}</div>
-    <div class="kpi-sub">${total?Math.round(k.v/total*100):0}% do total</div>
+    <div class="kpi-sub">${k.s}</div>
   </div>`).join('');
 
   // Por status
@@ -7158,19 +7135,26 @@ function _renderBiCases(f) {
     return true;
   });
 
-  const total     = cases.length;
-  const totalCase = cases.filter(c=>c.tipo==='Case').length;
-  const totalDep  = cases.filter(c=>c.tipo==='Depoimento').length;
-  const publicados= cases.filter(c=>c.status==='Publicado').length;
+  const total      = cases.length;
+  const totalCase  = cases.filter(c=>c.tipo==='Case').length;
+  const totalDep   = cases.filter(c=>c.tipo==='Depoimento').length;
+  const publicados = cases.filter(c=>c.status==='Publicado').length;
+  // Planejado = em pipeline ativo (excluindo Publicado, Arquivado e Reprovado)
+  const planejados = cases.filter(c=>!['Publicado','Arquivado','Reprovado'].includes(c.status)).length;
 
   // KPIs
   const kpiWrap = document.getElementById('bi-cases-kpis-wrap');
   if (kpiWrap) {
     kpiWrap.innerHTML = `<div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">` + [
-      {l:'Total Publicações', v:total,      s:'cases + depoimentos', c:'var(--primary)'},
-      {l:'Cases',             v:totalCase,  s:total?Math.round(totalCase/total*100)+'%':'—', c:'var(--blue)'},
-      {l:'Depoimentos',       v:totalDep,   s:total?Math.round(totalDep/total*100)+'%':'—',  c:'var(--teal)'},
-      {l:'Publicados',        v:publicados, s:total?Math.round(publicados/total*100)+'% aproveitamento':'—', c:'var(--green)'},
+      {
+        l: 'Em Produção',
+        v: total,
+        s: `<span style="color:var(--primary);font-weight:600">${publicados} publicado${publicados!==1?'s':''}</span>`,
+        c: 'var(--primary)'
+      },
+      {l:'Cases',      v:totalCase,  s:total?Math.round(totalCase/total*100)+'%':'—', c:'var(--blue)' },
+      {l:'Depoimentos',v:totalDep,   s:total?Math.round(totalDep/total*100)+'%':'—',  c:'var(--teal)' },
+      {l:'Publicados', v:publicados, s:total?Math.round(publicados/total*100)+'% aproveitamento':'—', c:'var(--green)'},
     ].map(k=>`<div class="kpi" style="--kc:${k.c}">
       <div class="kpi-label">${k.l}</div>
       <div class="kpi-value">${k.v}</div>
@@ -7462,10 +7446,9 @@ function toggleColPanel(e) {
   panel.classList.toggle('open');
 }
 
-// Close panel on outside click
+// Close ALL column toggle panels on outside click
 document.addEventListener('click', () => {
-  const p = document.getElementById('col-toggle-panel');
-  if (p) p.classList.remove('open');
+  document.querySelectorAll('.col-toggle-panel.open').forEach(p => p.classList.remove('open'));
 });
 
 // ═══════════════════════════════════
