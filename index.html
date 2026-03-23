@@ -3274,12 +3274,16 @@ async function loadStateCloud() {
     if (local) {
       const parsed = JSON.parse(local);
       if (parsed && typeof parsed === 'object') {
-        return runMigrations(parsed);
+        const migrated = runMigrations(parsed);
+        ensureCasesArray(migrated);
+        return migrated;
       }
     }
   } catch(e) {}
   localStorage.setItem(DB_VERSION_KEY, String(DB_VERSION));
-  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+  const def = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  ensureCasesArray(def);
+  return def;
 }
 
 // Polling: verifica mudanças na nuvem a cada 15 segundos
@@ -8751,6 +8755,18 @@ function confirmRestoreBackup(slot) {
 document.addEventListener('DOMContentLoaded', async () => {
   // ── Check for shared link (?s=binId) first
   const isSharedLink = await checkShareHash();
+
+  // ── Load DB from cloud / localStorage BEFORE init()
+  // This ensures saved data (cases, acoes, etc.) survives page reload
+  try {
+    const loaded = await loadStateCloud();
+    if (loaded && typeof loaded === 'object' && loaded.hospitals) {
+      DB = loaded;
+      ensureCasesArray(DB);
+    }
+  } catch(e) {
+    console.warn('[AgendCS] loadStateCloud failed, using DEFAULT_DATA:', e);
+  }
 
   // ── Check existing session
   const sess = loadSession();
