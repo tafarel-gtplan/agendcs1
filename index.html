@@ -1854,6 +1854,10 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
           <div id="ms-cf-status"></div>
         </div>
         <div class="filter-group" style="flex-direction:column;align-items:flex-start;gap:3px">
+          <span class="filter-label">Módulo</span>
+          <div id="ms-cf-modulo"></div>
+        </div>
+        <div class="filter-group" style="flex-direction:column;align-items:flex-start;gap:3px">
           <span class="filter-label">Consultor</span>
           <div id="ms-cf-consultor"></div>
         </div>
@@ -1918,6 +1922,7 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
             <th>ID</th>
             <th>Cliente</th>
             <th>Tipo</th>
+            <th>Módulo</th>
             <th>Título</th>
             <th>Consultor</th>
             <th>Status</th>
@@ -1942,6 +1947,7 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
       </div>
       <div class="panel-actions" onclick="event.stopPropagation()" style="font-size:11px;gap:8px">
         <div class="filter-group"><div id="ms-ci-tipo"></div></div>
+        <div class="filter-group"><div id="ms-ci-modulo"></div></div>
         <div class="filter-group"><div id="ms-ci-status"></div></div>
       </div>
     </div>
@@ -1989,12 +1995,26 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
           </select>
         </div>
         <div class="fgroup">
+          <div class="flabel">Módulo *</div>
+          <select class="fselect2" id="nc-modulo">
+            <option value="">— Selecionar —</option>
+            <option value="SIO/MRP">SIO/MRP</option>
+            <option value="OPME">OPME</option>
+            <option value="SRM">SRM</option>
+            <option value="DRP">DRP</option>
+            <option value="VMI">VMI</option>
+            <option value="3WM">3WM</option>
+            <option value="Outro">Outro</option>
+          </select>
+        </div>
+        <div class="fgroup">
           <div class="flabel">Consultor Responsável</div>
           <input class="finput" id="nc-consultor" placeholder="Nome do consultor">
         </div>
         <div class="fgroup">
           <div class="flabel">Status</div>
           <select class="fselect2" id="nc-status">
+            <option value="Backlog">Backlog</option>
             <option value="Candidato">Candidato</option>
             <option value="Rascunho">Rascunho</option>
             <option value="Em revisão">Em revisão</option>
@@ -2039,6 +2059,7 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r8);flex-wrap:wrap">
     <span style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx3);flex-shrink:0">Filtros</span>
     <div id="ms-dashc-tipo"></div>
+    <div id="ms-dashc-modulo"></div>
     <div id="ms-dashc-status"></div>
     <button class="btn btn-ghost btn-sm" onclick="clearDashCFilters()">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:3px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>Limpar
@@ -3014,10 +3035,12 @@ const MIGRATIONS = {
     data.nextAtaSeq  = 1;
     return data;
   },
-  // v7→v8: garante array cases e nextCaseSeq (módulo Cases & Depoimentos)
+  // v7→v8: garante array cases, nextCaseSeq e campo modulo
   8: (data) => {
     if (!Array.isArray(data.cases)) data.cases = [];
     if (!data.nextCaseSeq) data.nextCaseSeq = (data.cases.length || 0) + 1;
+    // Ensure modulo field exists on all cases
+    data.cases = data.cases.map(c => ({ modulo: '', ...c }));
     return data;
   },
 };
@@ -5301,6 +5324,7 @@ const TABLE_COLS = {
     { key:'id',          label:'ID',             required:true,  default:false },
     { key:'cliente',     label:'Cliente',         required:true,  default:true  },
     { key:'tipo',        label:'Tipo',            required:false, default:true  },
+    { key:'modulo',      label:'Módulo',          required:false, default:true  },
     { key:'titulo',      label:'Título',          required:true,  default:true  },
     { key:'consultor',   label:'Consultor',       required:false, default:true  },
     { key:'status',      label:'Status',          required:true,  default:true  },
@@ -6522,11 +6546,12 @@ function renderDashR() {
 function getDashCFilters() {
   return {
     tipo:   getMsValues('dashc-tipo'),
+    modulo: getMsValues('dashc-modulo'),
     status: getMsValues('dashc-status'),
   };
 }
 function clearDashCFilters() {
-  ['dashc-tipo','dashc-status'].forEach(id => resetMs(id));
+  ['dashc-tipo','dashc-modulo','dashc-status'].forEach(id => resetMs(id));
   renderDashCases();
 }
 function renderDashCases() {
@@ -6877,8 +6902,10 @@ function _renderBiAcoes(ag, f) {
 // CASES & DEPOIMENTOS — Módulo completo
 // ═══════════════════════════════════════════════════════════════════
 
-const CASE_STATUS_LIST = ['Candidato','Rascunho','Em revisão','Aguardando aprovação','Aprovado','Publicado','Arquivado','Reprovado'];
+const CASE_STATUS_LIST = ['Backlog','Candidato','Rascunho','Em revisão','Aguardando aprovação','Aprovado','Publicado','Arquivado','Reprovado'];
+const CASE_MODULO_LIST = ['SIO/MRP','OPME','SRM','DRP','VMI','3WM','Outro'];
 const CASE_STATUS_COLORS = {
+  'Backlog':              { bg:'rgba(100,116,139,.10)', color:'#94a3b8',  border:'rgba(100,116,139,.25)' },
   'Candidato':             { bg:'rgba(13,148,136,.12)',  color:'#0d9488',  border:'rgba(13,148,136,.3)'  },
   'Rascunho':              { bg:'rgba(217,119,6,.12)',   color:'#d97706',  border:'rgba(217,119,6,.3)'   },
   'Em revisão':            { bg:'rgba(37,99,235,.12)',   color:'#2563eb',  border:'rgba(37,99,235,.3)'   },
@@ -6912,6 +6939,7 @@ function _getCasesFilters() {
   return {
     cliente:  (document.getElementById('cf-cliente')||{}).value?.toLowerCase()||'',
     tipo:     getMsValues('cf-tipo'),
+    modulo:   getMsValues('cf-modulo'),
     status:   getMsValues('cf-status'),
     consultor:getMsValues('cf-consultor'),
     criaDe:   (document.getElementById('cf-cria-de')||{}).value||'',
@@ -6923,7 +6951,7 @@ function _getCasesFilters() {
 
 function clearCasesFilters() {
   const el = document.getElementById('cf-cliente'); if(el) el.value='';
-  ['cf-tipo','cf-status','cf-consultor'].forEach(id => resetMs(id));
+  ['cf-tipo','cf-modulo','cf-status','cf-consultor'].forEach(id => resetMs(id));
   ['cf-cria-de','cf-cria-ate','cf-pub-de','cf-pub-ate'].forEach(id=>{
     const e=document.getElementById(id); if(e) e.value='';
   });
@@ -6990,6 +7018,7 @@ function renderCases() {
       { key:'id',          html:`<td style="display:none;font-family:var(--fm);font-size:11px;color:var(--tx3)">${c.id}</td>` },
       { key:'cliente',     html:`<td style="display:none"><strong style="font-size:12.5px">${hosp.nome}</strong></td>` },
       { key:'tipo',        html:`<td style="display:none"><span class="type-pip ${c.tipo==='Case'?'pip-p':'pip-r'}">${c.tipo}</span></td>` },
+      { key:'modulo',      html:`<td style="display:none"><span style="font-size:11.5px;font-family:var(--fm);font-weight:600;color:var(--tx2)">${c.modulo||'—'}</span></td>` },
       { key:'titulo',      html:`<td style="display:none;max-width:220px;font-size:12.5px">${c.titulo}</td>` },
       { key:'consultor',   html:`<td style="display:none;font-size:12px">${c.consultor||'—'}</td>` },
       { key:'status',      html:`<td style="display:none">${_caseStatusBadge(c.status)}</td>` },
@@ -7028,8 +7057,9 @@ function renderCases() {
 // ── Indicators
 function renderCasesIndicadores() {
   const tipoF   = getMsValues('ci-tipo');
+  const moduloF = getMsValues('ci-modulo');
   const statusF = getMsValues('ci-status');
-  let cases = (DB.cases||[]).filter(c => msMatch(tipoF,c.tipo) && msMatch(statusF,c.status));
+  let cases = (DB.cases||[]).filter(c => msMatch(tipoF,c.tipo) && msMatch(moduloF,c.modulo||'') && msMatch(statusF,c.status));
 
   const total     = cases.length;
   const totalCase = cases.filter(c=>c.tipo==='Case').length;
@@ -7101,7 +7131,8 @@ function openNovoCaseModal() {
   const consultorEl = document.getElementById('nc-consultor');
   if (consultorEl) consultorEl.value = (typeof currentUser !== 'undefined' && currentUser?.name) ? currentUser.name : '';
   document.getElementById('nc-tipo').value   = 'Case';
-  document.getElementById('nc-status').value = 'Rascunho';
+  document.getElementById('nc-modulo').value = '';
+  document.getElementById('nc-status').value = 'Backlog';
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('nc-criacao').value    = today;
   document.getElementById('nc-publicacao').value = '';
@@ -7123,6 +7154,7 @@ function saveCase() {
       DB.cases[idx] = { ...DB.cases[idx],
         hospId, cliente: hosp?.nome||'', titulo,
         tipo:       document.getElementById('nc-tipo').value,
+        modulo:     document.getElementById('nc-modulo').value,
         consultor:  document.getElementById('nc-consultor').value.trim(),
         status:     document.getElementById('nc-status').value,
         criacao:    document.getElementById('nc-criacao').value,
@@ -7143,6 +7175,7 @@ function saveCase() {
     DB.cases.push({
       id, hospId, cliente: hosp?.nome||'', titulo,
       tipo:       document.getElementById('nc-tipo').value,
+      modulo:     document.getElementById('nc-modulo').value,
       consultor:  document.getElementById('nc-consultor').value.trim(),
       status:     document.getElementById('nc-status').value,
       criacao:    document.getElementById('nc-criacao').value,
@@ -7172,6 +7205,7 @@ function openEditCase(id) {
     DB.hospitals.map(h=>`<option value="${h.id}"${h.id===c.hospId?' selected':''}>${h.nome}</option>`).join('');
   document.getElementById('nc-titulo').value     = c.titulo||'';
   document.getElementById('nc-tipo').value       = c.tipo||'Case';
+  document.getElementById('nc-modulo').value     = c.modulo||'';
   document.getElementById('nc-consultor').value  = c.consultor||'';
   document.getElementById('nc-status').value     = c.status||'Rascunho';
   document.getElementById('nc-criacao').value    = c.criacao||'';
@@ -7200,11 +7234,15 @@ function initCasesMs() {
   const consultores = [...new Set([...consultSetCases,...consultSetHosps])]
     .sort().map(v=>({value:v,label:v}));
 
+  const MODULO_OPTS = CASE_MODULO_LIST.map(m=>({value:m,label:m}));
   buildMs('cf-tipo',      TIPO_OPTS,   'Tipo',      renderCases);
+  buildMs('cf-modulo',    MODULO_OPTS, 'Módulo',    renderCases);
   buildMs('cf-status',    STATUS_OPTS, 'Status',    renderCases);
   buildMs('cf-consultor', consultores.length ? consultores : [{value:'—',label:'Nenhum'}], 'Consultor', renderCases);
-  buildMs('ci-tipo',      TIPO_OPTS,   'Tipo',      renderCasesIndicadores);
-  buildMs('ci-status',    STATUS_OPTS, 'Status',    renderCasesIndicadores);
+  const MODULO_OPTS2 = CASE_MODULO_LIST.map(m=>({value:m,label:m}));
+  buildMs('ci-tipo',      TIPO_OPTS,    'Tipo',   renderCasesIndicadores);
+  buildMs('ci-modulo',    MODULO_OPTS2, 'Módulo', renderCasesIndicadores);
+  buildMs('ci-status',    STATUS_OPTS,  'Status', renderCasesIndicadores);
 }
 
 // Called from openNovoCaseModal instead of generic openModal
@@ -7215,6 +7253,7 @@ function _renderBiCases(f) {
   f = f || getDashCFilters();
   const cases = (DB.cases || []).filter(c => {
     if(!msMatch(f.tipo,   c.tipo   || '')) return false;
+    if(!msMatch(f.modulo, c.modulo || '')) return false;
     if(!msMatch(f.status, c.status || '')) return false;
     return true;
   });
@@ -7729,8 +7768,10 @@ function initAllMs() {
 
   // ── Cases & Depoimentos filters (view-dash-cases)
   const TIPO_C   = [{value:'Case',label:'Case'},{value:'Depoimento',label:'Depoimento'}];
-  const STCASE   = ['Rascunho','Em revisão','Aguardando aprovação','Aprovado','Publicado','Arquivado','Reprovado'].map(s=>({value:s,label:s}));
+  const STCASE   = CASE_STATUS_LIST.map(s=>({value:s,label:s}));
+  const MODC     = CASE_MODULO_LIST.map(m=>({value:m,label:m}));
   buildMs('dashc-tipo',   TIPO_C, 'Tipo',   renderDashCases);
+  buildMs('dashc-modulo', MODC,   'Módulo', renderDashCases);
   buildMs('dashc-status', STCASE, 'Status', renderDashCases);
 }
 
