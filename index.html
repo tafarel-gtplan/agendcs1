@@ -2931,7 +2931,7 @@ const DB_VERSION_KEY = 'agendcs_dbver';   // versão atual do schema
 const BACKUP_KEY     = 'agendcs_backup';  // backup pré-migração
 const CHANGELOG_KEY  = 'agendcs_changelog'; // registro de migrações
 const APP_VERSION    = '11.2.0';          // versão do app (semver)
-const DB_VERSION     = 7;                 // versão do schema — incremente a cada mudança estrutural
+const DB_VERSION     = 8;                 // versão do schema — incremente a cada mudança estrutural
 
 // ═══════════════════════════════════════════════════════════════════════
 // MIGRATIONS — uma entrada por versão de schema
@@ -3012,6 +3012,12 @@ const MIGRATIONS = {
     data.atas        = [];
     data.nextAcaoSeq = 1;
     data.nextAtaSeq  = 1;
+    return data;
+  },
+  // v7→v8: garante array cases e nextCaseSeq (módulo Cases & Depoimentos)
+  8: (data) => {
+    if (!Array.isArray(data.cases)) data.cases = [];
+    if (!data.nextCaseSeq) data.nextCaseSeq = (data.cases.length || 0) + 1;
     return data;
   },
 };
@@ -3228,6 +3234,9 @@ async function saveStateCloud(force = false) {
     _cloudSaveTimer = setTimeout(() => saveStateCloud(true), 2000);
     return;
   }
+  // Ensure cases array always present before persisting
+  if (!Array.isArray(DB.cases)) DB.cases = [];
+  if (!DB.nextCaseSeq) DB.nextCaseSeq = (DB.cases.length || 0) + 1;
   const payload = JSON.stringify({ db: DB, ts: Date.now(), ver: DB_VERSION });
   const ok = await safeStorageSet(CLOUD_KEY, payload, true);
   const el = document.getElementById('save-ts');
@@ -3254,6 +3263,7 @@ async function loadStateCloud() {
           const newPayload = JSON.stringify({ db: migrated, ts: Date.now(), ver: DB_VERSION });
           await safeStorageSet(CLOUD_KEY, newPayload, true);
         }
+        ensureCasesArray(migrated);
         return migrated;
       }
     } catch(e) {}
