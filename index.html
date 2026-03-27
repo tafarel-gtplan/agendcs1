@@ -489,21 +489,21 @@ tr:hover td { background: var(--surface2); }
   { content:'✓'; position:absolute; top:-4px; right:-4px; font-size:9px;
     background:var(--green); color:#fff; border-radius:50%; width:13px; height:13px;
     display:flex; align-items:center; justify-content:center; font-weight:900; }
-/* ── Agenda CONFIRMADA — pip azul mais escuro, borda sólida ── */
+/* ── Agenda CONFIRMADA — mantém azul (planejada), adiciona ✔ ── */
 .pip-Planejada-P.pip-agendada,
 .pip-Planejada-R.pip-agendada {
-  background: rgba(13,148,136,.18);
-  color: #0f766e;
-  border-color: rgba(13,148,136,.6);
-  box-shadow: 0 0 0 1.5px rgba(13,148,136,.15);
+  background: rgba(37,99,235,.22);
+  color: #1d4ed8;
+  border-color: rgba(37,99,235,.55);
+  box-shadow: 0 0 0 1.5px rgba(37,99,235,.18);
 }
-/* Ícone ✔ canto superior direito — agendada */
+/* Ícone ✔ canto superior direito — azul (confirmada, não realizada) */
 .pip-agendada::before {
   content: '✔';
   position: absolute;
   top: -5px; right: -5px;
   font-size: 8px;
-  background: #0f766e;
+  background: #1d4ed8;
   color: #fff;
   border-radius: 50%;
   width: 13px; height: 13px;
@@ -1308,7 +1308,7 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
 [data-theme="dark"] .pip-Atrasada-R,
 [data-theme="dark"] .pip-atrasada-R { background: rgba(217,119,6,.25); color: #fcd34d; border-color: rgba(217,119,6,.5); }
 [data-theme="dark"] .pip-Planejada-P.pip-agendada,
-[data-theme="dark"] .pip-Planejada-R.pip-agendada { background: rgba(13,148,136,.25); color: #5eead4; border-color: rgba(13,148,136,.5); }
+[data-theme="dark"] .pip-Planejada-R.pip-agendada { background: rgba(37,99,235,.3); color: #93c5fd; border-color: rgba(37,99,235,.6); }
 
 /* ── Dark mode type pip badges ── */
 [data-theme="dark"] .pip-p { background: rgba(37,99,235,.2); color: #93c5fd; border-color: rgba(37,99,235,.35); }
@@ -1456,7 +1456,7 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
   </button>
   <div style="flex:1;min-width:0">
     <span class="topbar-title" id="topbar-title">Calendário de Agendas</span>
-    <span class="topbar-sub" id="topbar-sub">Squad 1 · Jan–Dez 2025</span>
+    <span class="topbar-sub" id="topbar-sub"></span>
   </div>
   <span class="mode-badge mode-edit" id="mode-badge">● Edição</span>
 
@@ -1596,7 +1596,7 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
     <span>📌 Legenda de Tipos:</span>
     <span class="type-pip pip-p">P</span><span>= Agenda Presencial</span>
     <span class="type-pip pip-r">R</span><span>= Agenda Recorrente</span>
-    <span style="color:var(--tx4);font-size:11px;margin-left:8px">✔ = Agendada com cliente (data preenchida) &nbsp;|&nbsp; ✓ = Realizada &nbsp;|&nbsp; Clique em qualquer célula para editar</span>
+    <span style="color:var(--tx4);font-size:11px;margin-left:8px">🔵 ✔ = Confirmada com data (azul) &nbsp;|&nbsp; 🟢 ✓ = Realizada &nbsp;|&nbsp; Clique em qualquer célula para editar</span>
   </div>
 </div>
 
@@ -1953,7 +1953,7 @@ body.view-only #view-config button:not(.btn-outline[onclick="closeModal(\'shareM
     </div>
     <div id="cases-sec-indicadores" style="display:none;padding:14px 16px">
       <!-- KPI Cards -->
-      <div class="kpi-row" id="ci-kpis" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px"></div>
+      <div class="kpi-row" id="ci-kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px"></div>
       <!-- Gráficos -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="panel">
@@ -2278,18 +2278,18 @@ Atenciosamente,
       <div class="panel-header"><div class="panel-title">⚙️ Parâmetros Gerais</div></div>
       <div class="modal-body">
         <div class="field-row">
-          <div class="field"><div class="flabel">Nome do Squad</div><input class="finput2" value="Squad 1"></div>
-          <div class="field"><div class="flabel">Gestor CS</div><input class="finput2" value="Alberto Lima"></div>
+          <div class="field"><div class="flabel">Nome do Squad</div><input class="finput2" id="conf-squad" placeholder="Ex: Squad 1"></div>
+          <div class="field"><div class="flabel">Gestor CS</div><input class="finput2" id="conf-gestor" placeholder="Nome do gestor"></div>
         </div>
         <div class="field-row">
-          <div class="field"><div class="flabel">Ano de referência</div><input class="finput2" id="conf-ano" value="2025" type="number" min="2020" max="2099" onchange="updateAnoRef(this.value)"></div>
-          <div class="field"><div class="flabel">Meses ativos</div><input class="finput2" value="JAN – DEZ"></div>
+          <div class="field"><div class="flabel">Ano de referência</div><input class="finput2" id="conf-ano" type="number" min="2020" max="2099" onchange="updateAnoRef(this.value)"></div>
+          <div class="field"><div class="flabel">Meses ativos</div><input class="finput2" id="conf-meses" placeholder="JAN – DEZ"></div>
         </div>
         <div class="field">
           <div class="flabel">Modo de acesso padrão</div>
-          <select class="fselect2"><option>Edição completa</option><option>Somente visualização</option></select>
+          <select class="fselect2" id="conf-modo"><option value="editor">Edição completa</option><option value="viewer">Somente visualização</option></select>
         </div>
-        <button class="btn btn-primary" onclick="showToast('Configurações salvas','success')">Salvar</button>
+        <button class="btn btn-primary" onclick="saveConfigParams()">Salvar</button>
       </div>
     </div>
     <div class="panel">
@@ -4727,7 +4727,7 @@ let editingCell    = null; // {hospId, month, week}
 // NAVIGATION
 // ═══════════════════════════════════
 const VIEW_TITLES = {
-  agendas:   ['Calendário de Agendas',  () => `Squad 1 · Jan–Dez ${getAnoRef()}`],
+  agendas:   ['Calendário de Agendas',  () => `${(DB.config&&DB.config.squad)||'Squad 1'} · Jan–Dez ${getAnoRef()}`],
   acoes:     ['Gestão de Ações',         'Relatório consolidado P + R'],
   hospitais: ['Gestão de Clientes',       'Cadastro e gestão da base de clientes'],
   dashboard:  ['Agendas Presenciais',            'Indicadores de execução · agendas P'],
@@ -7061,16 +7061,20 @@ function renderCasesIndicadores() {
   const statusF = getMsValues('ci-status');
   let cases = (DB.cases||[]).filter(c => msMatch(tipoF,c.tipo) && msMatch(moduloF,c.modulo||'') && msMatch(statusF,c.status));
 
-  const total     = cases.length;
-  const totalCase = cases.filter(c=>c.tipo==='Case').length;
-  const totalDep  = cases.filter(c=>c.tipo==='Depoimento').length;
-  const planejadosCI = cases.filter(c=>!['Publicado','Arquivado','Reprovado'].includes(c.status)).length;
+  const total       = cases.length;
+  const totalCase   = cases.filter(c=>c.tipo==='Case').length;
+  const totalDep    = cases.filter(c=>c.tipo==='Depoimento').length;
+  const pubCI       = cases.filter(c=>c.status==='Publicado').length;
+  const backlogCI   = cases.filter(c=>c.status==='Backlog').length;
+  // Em Produção: excluindo Backlog (não iniciado) e finalizados
+  const emProdCI    = cases.filter(c=>!['Backlog','Publicado','Arquivado','Reprovado'].includes(c.status)).length;
 
-  // KPIs
+  // KPIs — ordem: Backlog → Em Produção → Cases → Depoimentos
   document.getElementById('ci-kpis').innerHTML = [
-    {l:'Em Produção', v:total, s:`<span style="color:var(--primary);font-weight:600">${cases.filter(c=>c.status==='Publicado').length} publicado${cases.filter(c=>c.status==='Publicado').length!==1?'s':''}</span>`, c:'var(--primary)'},
-    {l:'Cases',             v:totalCase, s:total?Math.round(totalCase/total*100)+'% do total':'—', c:'var(--blue)'  },
-    {l:'Depoimentos',       v:totalDep,  s:total?Math.round(totalDep/total*100)+'% do total':'—',  c:'var(--teal)'  },
+    {l:'Backlog',      v:backlogCI, s:total?Math.round(backlogCI/total*100)+'% do total':'—', c:'#94a3b8'      },
+    {l:'Em Produção',  v:emProdCI,  s:`<span style="color:var(--primary);font-weight:600">${pubCI} publicado${pubCI!==1?'s':''}</span>`, c:'var(--primary)'},
+    {l:'Cases',        v:totalCase, s:total?Math.round(totalCase/total*100)+'% do total':'—', c:'var(--blue)'  },
+    {l:'Depoimentos',  v:totalDep,  s:total?Math.round(totalDep/total*100)+'% do total':'—',  c:'var(--teal)'  },
   ].map(k=>`<div class="kpi" style="--kc:${k.c}">
     <div class="kpi-label">${k.l}</div>
     <div class="kpi-value">${k.v}</div>
@@ -7258,46 +7262,41 @@ function _renderBiCases(f) {
     return true;
   });
 
-  const total      = cases.length;
-  const totalCase  = cases.filter(c=>c.tipo==='Case').length;
-  const totalDep   = cases.filter(c=>c.tipo==='Depoimento').length;
-  const publicados = cases.filter(c=>c.status==='Publicado').length;
-  // Planejado = em pipeline ativo (excluindo Publicado, Arquivado e Reprovado)
-  const planejados = cases.filter(c=>!['Publicado','Arquivado','Reprovado'].includes(c.status)).length;
+  const total       = cases.length;
+  const totalCase   = cases.filter(c=>c.tipo==='Case').length;
+  const totalDep    = cases.filter(c=>c.tipo==='Depoimento').length;
+  const publicados  = cases.filter(c=>c.status==='Publicado').length;
+  const backlog     = cases.filter(c=>c.status==='Backlog').length;
+  // "Em Produção" = ativos no pipeline, excluindo Backlog (não iniciado) e finalizados
+  const emProducao  = cases.filter(c=>!['Backlog','Publicado','Arquivado','Reprovado'].includes(c.status)).length;
 
-  // KPIs
+  // KPIs — ordem do fluxo: Backlog → Em Produção → Cases → Depoimentos → Publicados
   const kpiWrap = document.getElementById('bi-cases-kpis-wrap');
   if (kpiWrap) {
-    kpiWrap.innerHTML = `<div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">` + [
-      {
-        l: 'Em Produção',
-        v: total,
-        s: `<span style="color:var(--primary);font-weight:600">${publicados} publicado${publicados!==1?'s':''}</span>`,
-        c: 'var(--primary)'
-      },
-      {l:'Cases',      v:totalCase,  s:total?Math.round(totalCase/total*100)+'%':'—', c:'var(--blue)' },
-      {l:'Depoimentos',v:totalDep,   s:total?Math.round(totalDep/total*100)+'%':'—',  c:'var(--teal)' },
-      {l:'Publicados', v:publicados, s:total?Math.round(publicados/total*100)+'% aproveitamento':'—', c:'var(--green)'},
-    ].map(k=>`<div class="kpi" style="--kc:${k.c}">
+    kpiWrap.innerHTML = `<div class="kpi-row" id="cases-kpi-row" style="grid-template-columns:repeat(5,1fr)">` + [
+      {id:'kpi-backlog',    l:'Backlog',       v:backlog,    s:total?Math.round(backlog/total*100)+'% do total':'—',          c:'#94a3b8'       , draggable:true},
+      {id:'kpi-producao',   l:'Em Produção',   v:emProducao, s:`<span style="color:var(--primary);font-weight:600">${publicados} publicado${publicados!==1?'s':''}</span>`, c:'var(--primary)', draggable:true},
+      {id:'kpi-cases',      l:'Cases',         v:totalCase,  s:total?Math.round(totalCase/total*100)+'%':'—',                 c:'var(--blue)'   , draggable:true},
+      {id:'kpi-depoimentos',l:'Depoimentos',   v:totalDep,   s:total?Math.round(totalDep/total*100)+'%':'—',                 c:'var(--teal)'   , draggable:true},
+      {id:'kpi-publicados', l:'Publicados',    v:publicados, s:total?Math.round(publicados/total*100)+'% aproveitamento':'—', c:'var(--green)'  , draggable:true},
+    ].map(k=>`<div class="kpi kpi-draggable" id="${k.id}" draggable="true" style="--kc:${k.c};cursor:grab" 
+        ondragstart="onKpiDragStart(event)" ondragover="onKpiDragOver(event)" ondrop="onKpiDrop(event)" ondragend="onKpiDragEnd(event)">
       <div class="kpi-label">${k.l}</div>
       <div class="kpi-value">${k.v}</div>
       <div class="kpi-sub">${k.s}</div>
     </div>`).join('') + `</div>`;
+    // Restore saved order if any
+    restoreKpiOrder('cases-kpi-row', 'agendcs_kpi_order_cases');
   }
 
-  // Por status
-  const CASE_STATUS = ['Rascunho','Em revisão','Aguardando aprovação','Aprovado','Publicado','Arquivado','Reprovado'];
-  const STATUS_C    = {
-    'Rascunho':'#d97706','Em revisão':'#2563eb','Aguardando aprovação':'#7c3aed',
-    'Aprovado':'#10b981','Publicado':'#059669','Arquivado':'#64748b','Reprovado':'#dc2626'
-  };
-  const maxSt = Math.max(...CASE_STATUS.map(s=>cases.filter(c=>c.status===s).length),1);
+  // Por status — usa CASE_STATUS_LIST completo (inclui Backlog e Candidato)
+  const maxSt = Math.max(...CASE_STATUS_LIST.map(s=>cases.filter(c=>c.status===s).length), 1);
   const statusEl = document.getElementById('bi-cases-status');
   if (statusEl) {
-    statusEl.innerHTML = CASE_STATUS.map(s=>{
-      const n=cases.filter(c=>c.status===s).length;
-      if(!n) return '';
-      const col=STATUS_C[s]||'var(--primary)';
+    statusEl.innerHTML = CASE_STATUS_LIST.map(s=>{
+      const n   = cases.filter(c=>c.status===s).length;
+      if (!n) return '';
+      const col = CASE_STATUS_COLORS[s]?.color || 'var(--primary)';
       return `<div style="margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;margin-bottom:4px">
           <span style="font-size:12px;font-weight:600;color:var(--tx2)">${s}</span>
@@ -7370,8 +7369,9 @@ function _renderBiCases(f) {
       const pctPub = total?Math.round(publicados/total*100):0;
       if (pctPub >= 50) ins.push(_i(`${pctPub}% das publicações já estão no ar`,'pos'));
       else ins.push(_i(`Apenas ${pctPub}% publicadas — pipeline em andamento`,'warn'));
-      const rascunho = cases.filter(c=>c.status==='Rascunho').length;
-      if (rascunho > 0) ins.push(_i(`${rascunho} publicação(ões) ainda em Rascunho`,'info'));
+      if (backlog > 0) ins.push(_i(`${backlog} item(ns) em Backlog — ainda não iniciado(s)`,'info'));
+      const candidatos = cases.filter(c=>c.status==='Candidato').length;
+      if (candidatos > 0) ins.push(_i(`${candidatos} candidato(s) mapeado(s) para produção`,'info'));
       const aguard = cases.filter(c=>c.status==='Aguardando aprovação').length;
       if (aguard > 0) ins.push(_i(`${aguard} aguardando aprovação — ação necessária`,'warn'));
       if (totalDep === 0 && total > 0) ins.push(_i('Nenhum Depoimento coletado ainda','info'));
@@ -8220,18 +8220,75 @@ function saveEditAcao() {
   syncAllViews();
 }
 
+// ── Config helpers — lê/grava DB.config
+function ensureConfig(db) {
+  if (!db.config) db.config = {};
+  if (!db.config.squad)   db.config.squad   = 'Squad 1';
+  if (!db.config.gestor)  db.config.gestor  = 'Tafarel Maurente';
+  if (!db.config.anoRef)  db.config.anoRef  = new Date().getFullYear();
+  if (!db.config.meses)   db.config.meses   = 'JAN – DEZ';
+  if (!db.config.modo)    db.config.modo    = 'editor';
+  return db;
+}
+
 function getAnoRef() {
+  if (DB.config && DB.config.anoRef) return String(DB.config.anoRef);
   const el = document.getElementById('conf-ano');
-  return el ? el.value : '2025';
+  return el ? el.value : String(new Date().getFullYear());
 }
 
 function updateAnoRef(ano) {
   if (!ano || ano < 2020) return;
-  // Update topbar subtitle if on agendas view
+  if (!DB.config) DB.config = {};
+  DB.config.anoRef = parseInt(ano);
+  // Reflect immediately in topbar if on agendas view
   if (currentView === 'agendas') {
-    document.getElementById('topbar-sub').textContent = `Squad 1 · Jan–Dez ${ano}`;
+    const subEl = document.getElementById('topbar-sub');
+    if (subEl) subEl.textContent = `${DB.config.squad||'Squad 1'} · Jan–Dez ${ano}`;
   }
-  showToast(`Ano de referência atualizado para ${ano}`, 'success');
+}
+
+function loadConfigParams() {
+  ensureConfig(DB);
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+  set('conf-squad',  DB.config.squad);
+  set('conf-gestor', DB.config.gestor);
+  set('conf-ano',    DB.config.anoRef);
+  set('conf-meses',  DB.config.meses);
+  const modo = document.getElementById('conf-modo');
+  if (modo) modo.value = DB.config.modo || 'editor';
+}
+
+function saveConfigParams() {
+  if (!canEdit()) { showToast('Acesso negado.', 'error'); return; }
+  ensureConfig(DB);
+  const get = id => (document.getElementById(id)||{}).value?.trim() || '';
+  const ano = parseInt(get('conf-ano'));
+  if (!ano || ano < 2020 || ano > 2099) {
+    showToast('Ano de referência inválido.', 'error'); return;
+  }
+  DB.config.squad  = get('conf-squad')  || DB.config.squad;
+  DB.config.gestor = get('conf-gestor') || DB.config.gestor;
+  DB.config.anoRef = ano;
+  DB.config.meses  = get('conf-meses')  || DB.config.meses;
+  DB.config.modo   = (document.getElementById('conf-modo')||{}).value || 'editor';
+
+  saveState();
+
+  // Update topbar subtitle immediately (works on any view)
+  const subEl = document.getElementById('topbar-sub');
+  if (subEl) {
+    const entry = VIEW_TITLES[currentView];
+    if (entry) {
+      const s = entry[1];
+      subEl.textContent = typeof s === 'function' ? s() : (s || '');
+    }
+  }
+
+  // Update sidebar squad label if present
+  document.querySelectorAll('.sidebar-squad-label').forEach(el => el.textContent = DB.config.squad);
+
+  showToast(`✅ Parâmetros salvos — Gestor: ${DB.config.gestor} · Ano: ${DB.config.anoRef}`, 'success');
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -8588,6 +8645,7 @@ function init() {
   initAllMs();
   // ── Validate data integrity on startup
   ensureCasesArray(DB);
+  ensureConfig(DB);
   const issues = validateDataIntegrity(DB);
   if (issues.length > 0) {
     console.warn('[AgendCS] Avisos de integridade de dados:', issues);
@@ -8607,6 +8665,9 @@ function init() {
   buildColCheckboxes();
   populateHospSelects();
   renderCalendar();
+  // Set topbar subtitle from saved config
+  const _tsub = document.getElementById('topbar-sub');
+  if (_tsub) { const [,s]=VIEW_TITLES['agendas']||[]; if(s) _tsub.textContent=typeof s==='function'?s():s; }
   document.getElementById('badge-acoes').textContent = DB.acoes.length;
   // Auto-save every 30s
   setInterval(autoSave, 30000);
@@ -8637,6 +8698,9 @@ function renderConfigInfo() {
   const blockedBanner = document.getElementById('config-blocked-banner');
   const isViewer = typeof currentUser !== 'undefined' && currentUser?.role !== 'editor';
   if (blockedBanner) blockedBanner.style.display = isViewer ? 'block' : 'none';
+
+  // ── Populate config fields from DB
+  loadConfigParams();
 
   const el = document.getElementById('config-version-panel');
   if (!el) return;
@@ -8836,6 +8900,62 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   // else: login screen stays visible (default)
 });
+
+// ═══════════════════════════════════
+// KPI DRAG-AND-DROP REORDERING
+// ═══════════════════════════════════
+let _kpiDragSrc = null;
+
+function onKpiDragStart(e) {
+  _kpiDragSrc = e.currentTarget;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', _kpiDragSrc.id);
+  setTimeout(() => _kpiDragSrc.style.opacity = '0.4', 0);
+}
+function onKpiDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.style.outline = '2px dashed var(--primary)';
+  e.currentTarget.style.outlineOffset = '2px';
+}
+function onKpiDrop(e) {
+  e.preventDefault();
+  const target = e.currentTarget;
+  target.style.outline = '';
+  if (!_kpiDragSrc || _kpiDragSrc === target) return;
+  const parent = _kpiDragSrc.parentNode;
+  if (target.parentNode !== parent) return;
+  // Swap positions
+  const nodes  = [...parent.children];
+  const si = nodes.indexOf(_kpiDragSrc);
+  const ti = nodes.indexOf(target);
+  if (si < ti) parent.insertBefore(_kpiDragSrc, target.nextSibling);
+  else          parent.insertBefore(_kpiDragSrc, target);
+  // Persist order
+  const storageKey = parent.id === 'cases-kpi-row' ? 'agendcs_kpi_order_cases' : null;
+  if (storageKey) {
+    const order = [...parent.children].map(c => c.id);
+    try { localStorage.setItem(storageKey, JSON.stringify(order)); } catch(_) {}
+  }
+}
+function onKpiDragEnd(e) {
+  e.currentTarget.style.opacity = '';
+  document.querySelectorAll('.kpi-draggable').forEach(k => { k.style.outline = ''; });
+  _kpiDragSrc = null;
+}
+function restoreKpiOrder(rowId, storageKey) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+    if (!saved || !Array.isArray(saved)) return;
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    saved.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.parentNode === row) row.appendChild(el);
+    });
+  } catch(_) {}
+}
+
 </script>
 </body>
 </html>
